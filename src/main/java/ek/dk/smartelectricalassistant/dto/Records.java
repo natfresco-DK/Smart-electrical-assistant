@@ -1,14 +1,16 @@
-package ek.dk.smartelectricalassistant;
+package ek.dk.smartelectricalassistant.dto;
 
 import java.util.List;
 
-public class Record{
+public class Records{
 
     record ElectricityAdvice(
             String summary,
             List<String> reasons,
             String recommendation
     ) {}
+
+    record geminiRequest(String prompt){}
 
 }
 

@@ -17,8 +17,6 @@ public class Records{
 
     public record ElectricityPrice(
             @JsonProperty("DKK_per_kWh") BigDecimal dkkPerKwh,
-            @JsonProperty("EUR_per_kWh") BigDecimal eurPerKwh,
-            @JsonProperty("EXR") BigDecimal exchangeRate,
             @JsonProperty("time_start") OffsetDateTime timeStart,
             @JsonProperty("time_end") OffsetDateTime timeEnd
     ) {

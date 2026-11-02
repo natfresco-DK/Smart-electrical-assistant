@@ -1,6 +1,7 @@
 package ek.dk.smartelectricalassistant.controllers;
 
 import ek.dk.smartelectricalassistant.dto.Records;
+import ek.dk.smartelectricalassistant.model.PriceArea;
 import ek.dk.smartelectricalassistant.service.ElectricityPriceService;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,7 +26,7 @@ public class UserController {
     public List<Records.ElectricityPrice> getPrices(
             @RequestParam
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
-            @RequestParam(defaultValue = "DK2") String zone) {
-        return electricityPriceService.getPrices(date, zone);
+            @RequestParam(defaultValue = "DK2") PriceArea priceArea) {
+        return electricityPriceService.getPrices(date, priceArea);
     }
 }

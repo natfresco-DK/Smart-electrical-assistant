@@ -2,6 +2,7 @@ package ek.dk.smartelectricalassistant.service;
 
 import ek.dk.smartelectricalassistant.api.ElPrisApi;
 import ek.dk.smartelectricalassistant.dto.Records;
+import ek.dk.smartelectricalassistant.model.PriceArea;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -16,7 +17,7 @@ public class ElectricityPriceService {
         this.elPrisApi = elPrisApi;
     }
 
-    public List<Records.ElectricityPrice> getPrices(LocalDate date, String priceArea) {
+    public List<Records.ElectricityPrice> getPrices(LocalDate date, PriceArea priceArea) {
         return elPrisApi.getPrices(date, priceArea);
     }
 }

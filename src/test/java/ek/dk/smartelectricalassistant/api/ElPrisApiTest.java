@@ -1,5 +1,6 @@
 package ek.dk.smartelectricalassistant.api;
 
+import ek.dk.smartelectricalassistant.model.PriceArea;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,27 +36,22 @@ class ElPrisApiTest {
     void rejectsNullDate() {
         ResponseStatusException exception = assertThrows(
                 ResponseStatusException.class,
-                () -> new ElPrisApi("http://localhost").getPrices(null, "DK2"));
+                () -> new ElPrisApi("http://localhost").getPrices(null, PriceArea.DK2));
 
         assertEquals(BAD_REQUEST, exception.getStatusCode());
         assertEquals("date is required", exception.getReason());
     }
 
     @Test
-    void rejectsNullOrBlankPriceArea() {
+    void rejectsNullPriceArea() {
         ElPrisApi api = new ElPrisApi("http://localhost");
 
         ResponseStatusException nullException = assertThrows(
                 ResponseStatusException.class,
                 () -> api.getPrices(LocalDate.of(2026, 11, 2), null));
-        ResponseStatusException blankException = assertThrows(
-                ResponseStatusException.class,
-                () -> api.getPrices(LocalDate.of(2026, 11, 2), "  "));
 
         assertEquals(BAD_REQUEST, nullException.getStatusCode());
         assertEquals("priceArea is required", nullException.getReason());
-        assertEquals(BAD_REQUEST, blankException.getStatusCode());
-        assertEquals("priceArea is required", blankException.getReason());
     }
 
     @Test
@@ -73,7 +69,7 @@ class ElPrisApiTest {
         ElPrisApi api = new ElPrisApi("http://localhost:" + server.getAddress().getPort());
         ResponseStatusException exception = assertThrows(
                 ResponseStatusException.class,
-                () -> api.getPrices(LocalDate.of(2026, 11, 2), "DK2"));
+                () -> api.getPrices(LocalDate.of(2026, 11, 2), PriceArea.DK2));
 
         assertEquals(NOT_FOUND, exception.getStatusCode());
         assertEquals(

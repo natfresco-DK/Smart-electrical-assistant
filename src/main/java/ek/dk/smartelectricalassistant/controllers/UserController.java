@@ -1,7 +1,7 @@
 package ek.dk.smartelectricalassistant.controllers;
 
 import ek.dk.smartelectricalassistant.dto.Records;
-import ek.dk.smartelectricalassistant.service.ElectricityService;
+import ek.dk.smartelectricalassistant.service.ElectricityPriceService;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,10 +16,10 @@ import java.util.List;
 @RequestMapping("/api/electricity-prices")
 public class UserController {
 
-    private final ElectricityService electricityService;
+    private final ElectricityPriceService electricityPriceService;
 
-    public UserController(ElectricityService electricityService) {
-        this.electricityService = electricityService;
+    public UserController(ElectricityPriceService electricityPriceService) {
+        this.electricityPriceService = electricityPriceService;
     }
 
     @GetMapping
@@ -28,6 +28,6 @@ public class UserController {
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             @RequestParam(defaultValue = "DK2") String zone) {
         LocalDate requestedDate = date != null ? date : LocalDate.now(ZoneId.of("Europe/Copenhagen"));
-        return electricityService.getPrices(requestedDate, zone);
+        return electricityPriceService.getPrices(requestedDate, zone);
     }
 }

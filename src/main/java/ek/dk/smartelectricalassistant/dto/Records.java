@@ -7,19 +7,20 @@ import java.util.List;
 
 public class Records{
 
-    public record ElectricityAdvice(
+    public record AdviceResponse(
             String summary,
             List<String> reasons,
             String recommendation
-    ) {}
+    ){}
 
-    public record geminiRequest(String prompt){}
+    public record AdviceRequest(String prompt){}
 
     public record ElectricityPrice(
             @JsonProperty("DKK_per_kWh") BigDecimal dkkPerKwh,
             @JsonProperty("time_start") OffsetDateTime timeStart,
             @JsonProperty("time_end") OffsetDateTime timeEnd
-    ) {
-    }
+    ){}
+
+    public record PriceWindow(){}
 }
 

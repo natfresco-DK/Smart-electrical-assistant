@@ -8,11 +8,11 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Service
-public class ElectricityService {
+public class ElectricityPriceService {
 
     private final ElPrisApi elPrisApi;
 
-    public ElectricityService(ElPrisApi elPrisApi) {
+    public ElectricityPriceService(ElPrisApi elPrisApi) {
         this.elPrisApi = elPrisApi;
     }
 

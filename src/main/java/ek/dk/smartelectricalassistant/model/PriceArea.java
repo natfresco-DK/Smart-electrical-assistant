@@ -1,5 +1,6 @@
 package ek.dk.smartelectricalassistant.model;
 
-public class PriceArea {
-    
+public enum PriceArea {
+    DK1,
+    DK2
 }

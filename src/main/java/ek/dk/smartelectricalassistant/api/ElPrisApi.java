@@ -1,6 +1,7 @@
 package ek.dk.smartelectricalassistant.api;
 
 import ek.dk.smartelectricalassistant.dto.Records;
+import ek.dk.smartelectricalassistant.model.PriceArea;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
@@ -10,10 +11,10 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 
 import static org.springframework.http.HttpStatus.BAD_GATEWAY;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @Component
 public class ElPrisApi {
@@ -25,11 +26,15 @@ public class ElPrisApi {
         this.restClient = RestClient.builder().baseUrl(baseUrl).build();
     }
 
-    public List<Records.ElectricityPrice> getPrices(LocalDate date, String priceArea) {
-        String normalizedArea = priceArea.toUpperCase(Locale.ROOT);
-        if (!normalizedArea.equals("DK1") && !normalizedArea.equals("DK2")) {
-            throw new ResponseStatusException(BAD_REQUEST, "priceArea must be DK1 or DK2");
+    public List<Records.ElectricityPrice> getPrices(LocalDate date, PriceArea priceArea) {
+        if (date == null) {
+            throw new ResponseStatusException(BAD_REQUEST, "date is required");
         }
+        if (priceArea == null) {
+            throw new ResponseStatusException(BAD_REQUEST, "priceArea is required");
+        }
+
+        String normalizedArea = priceArea.name();
 
         try {
             Records.ElectricityPrice[] prices = restClient.get()
@@ -45,6 +50,10 @@ public class ElPrisApi {
 
             if (prices == null) {
                 throw new ResponseStatusException(BAD_GATEWAY, "Elpris API returned an empty response");
+            }
+            if (prices.length == 0) {
+                throw new ResponseStatusException(
+                        NOT_FOUND, "No electricity prices found for " + date + " in " + normalizedArea);
             }
             return Arrays.asList(prices);
         } catch (ResponseStatusException exception) {

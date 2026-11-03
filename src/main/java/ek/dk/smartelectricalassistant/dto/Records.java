@@ -27,7 +27,6 @@ public class Records{
             LocalDate date,
             PriceArea region,
             Duration duration,
-            BigDecimal consumption,
             LocalTime earliestStart,
             LocalTime latestEnd
     ){}

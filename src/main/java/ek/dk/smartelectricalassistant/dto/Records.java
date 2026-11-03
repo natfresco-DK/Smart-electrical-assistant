@@ -38,4 +38,10 @@ public class Records{
             OffsetDateTime endTime,
             BigDecimal averageSpotPrice
     ){}
+
+    public record PricedWindow(
+            String candidateId,
+            PriceWindow priceWindow,
+            BigDecimal estimatedCost
+    ){}
 }

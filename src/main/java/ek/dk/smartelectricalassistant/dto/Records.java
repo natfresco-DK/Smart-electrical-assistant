@@ -50,4 +50,11 @@ public class Records{
             PricedWindow cheapestWindow,
             PricedWindow baselineWindow
     ){}
+
+    public record AiWindowSelection(
+            String selectedCandidateId,
+            String summary,
+            List<String> reasons,
+            List<String> assumptions
+    ){}
 }

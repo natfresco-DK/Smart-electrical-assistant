@@ -44,4 +44,10 @@ public class Records{
             PriceWindow priceWindow,
             BigDecimal estimatedCost
     ){}
+
+    public record PriceAnalysis(
+            List<PricedWindow> validCandidates,
+            PricedWindow cheapestWindow,
+            PricedWindow baselineWindow
+    ){}
 }

@@ -8,13 +8,18 @@ import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.util.List;
 import ek.dk.smartelectricalassistant.model.PriceArea;
+import ek.dk.smartelectricalassistant.model.RecommendationSource;
 
 public class Records{
 
     public record AdviceResponse(
-            String summary,
-            List<String> reasons,
-            String recommendation
+            PriceArea priceArea,
+            PricedWindow selectedWindow,
+            PricedWindow cheapestWindow,
+            AiWindowSelection explanation,
+            BigDecimal extraCostVsCheapestDkk,
+            RecommendationSource source,
+            String priceNote
     ){}
 
     public record AdviceRequest(

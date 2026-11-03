@@ -2,8 +2,12 @@ package ek.dk.smartelectricalassistant.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.math.BigDecimal;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.util.List;
+import ek.dk.smartelectricalassistant.model.PriceArea;
 
 public class Records{
 
@@ -13,7 +17,15 @@ public class Records{
             String recommendation
     ){}
 
-    public record AdviceRequest(String prompt){}
+    public record AdviceRequest(
+            String question,
+            LocalDate date,
+            PriceArea region,
+            Duration duration,
+            BigDecimal consumption,
+            LocalTime earliestStart,
+            LocalTime latestEnd
+    ){}
 
     public record ElectricityPrice(
             @JsonProperty("DKK_per_kWh") BigDecimal dkkPerKwh,
@@ -23,4 +35,3 @@ public class Records{
 
     public record PriceWindow(){}
 }
-

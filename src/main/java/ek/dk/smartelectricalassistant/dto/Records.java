@@ -33,5 +33,9 @@ public class Records{
             @JsonProperty("time_end") OffsetDateTime timeEnd
     ){}
 
-    public record PriceWindow(){}
+    public record PriceWindow(
+            OffsetDateTime startTime,
+            OffsetDateTime endTime,
+            BigDecimal averageSpotPrice
+    ){}
 }

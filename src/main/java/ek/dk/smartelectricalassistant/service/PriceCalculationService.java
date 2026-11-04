@@ -10,6 +10,7 @@ import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class PriceCalculationService {
@@ -64,5 +65,9 @@ public class PriceCalculationService {
         }
 
         return validWindows;
+    }
+
+    public Records.PriceAnalysis analyse(Map<String, Records.PriceWindow> candidates,, BigDecimal estimatedKwh) {
+        return null;
     }
 }

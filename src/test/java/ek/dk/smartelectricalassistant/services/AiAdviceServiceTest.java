@@ -9,6 +9,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.time.Duration;
@@ -117,6 +119,17 @@ class AiAdviceServiceTest {
 
         assertThrows(IllegalArgumentException.class,
                 () -> service.advise(request(), candidates()));
+    }
+
+    @Test
+    void mapsProviderFailureToBadGateway() {
+        when(chatClient.prompt()).thenThrow(new RuntimeException("provider unavailable"));
+
+        ResponseStatusException exception = assertThrows(
+                ResponseStatusException.class,
+                () -> service.advise(request(), candidates()));
+
+        assertEquals(HttpStatus.BAD_GATEWAY, exception.getStatusCode());
     }
 
     private Records.AiWindowSelection validResponse(String selectedWindowId) {

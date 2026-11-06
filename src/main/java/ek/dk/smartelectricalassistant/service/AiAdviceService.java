@@ -156,6 +156,16 @@ public class AiAdviceService {
         if (!validCandidate) {
             throw new IllegalArgumentException("AI response selected window ID does not match any valid candidate");
         }
+        for (String assumption : response.assumptions()) {
+            if (assumption == null || assumption.isBlank()) {
+                throw new IllegalArgumentException("AI response assumptions cannot contain null or blank values");
+            }
+        }
+        for (String reason : response.reasons()) {
+            if (reason == null || reason.isBlank()) {
+                throw new IllegalArgumentException("AI response reasons cannot contain null or blank values");
+            }
+        }
         return response;
     }
 }

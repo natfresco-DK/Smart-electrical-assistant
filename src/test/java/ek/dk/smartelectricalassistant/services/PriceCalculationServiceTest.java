@@ -13,9 +13,7 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -199,11 +197,9 @@ public class PriceCalculationServiceTest {
     //analyze tests
     @Test
     void calculatesCostForEveryCandidateAndPreservesCandidateIds() {
-        Records.PriceWindow firstWindow = window(18, "1.50");
-        Records.PriceWindow secondWindow = window(20, "0.75");
-        Map<String, Records.PriceWindow> candidates = new LinkedHashMap<>();
-        candidates.put("candidate-1", firstWindow);
-        candidates.put("candidate-2", secondWindow);
+        Records.PriceWindow firstWindow = window("candidate-1", 18, "1.50");
+        Records.PriceWindow secondWindow = window("candidate-2", 20, "0.75");
+        List<Records.PriceWindow> candidates = List.of(firstWindow, secondWindow);
 
         Records.PriceAnalysis result = service.analyze(candidates, new BigDecimal("2.0"));
 
@@ -217,13 +213,11 @@ public class PriceCalculationServiceTest {
 
     @Test
     void selectsCheapestWindowAndEarliestWindowAsBaseline() {
-        Records.PriceWindow lateWindow = window(20, "0.50");
-        Records.PriceWindow earliestWindow = window(18, "1.00");
-        Records.PriceWindow middleWindow = window(19, "2.00");
-        Map<String, Records.PriceWindow> candidates = new LinkedHashMap<>();
-        candidates.put("late", lateWindow);
-        candidates.put("earliest", earliestWindow);
-        candidates.put("middle", middleWindow);
+        Records.PriceWindow lateWindow = window("late", 20, "0.50");
+        Records.PriceWindow earliestWindow = window("earliest", 18, "1.00");
+        Records.PriceWindow middleWindow = window("middle", 19, "2.00");
+        List<Records.PriceWindow> candidates =
+                List.of(lateWindow, earliestWindow, middleWindow);
 
         Records.PriceAnalysis result = service.analyze(candidates, new BigDecimal("2"));
 
@@ -233,9 +227,10 @@ public class PriceCalculationServiceTest {
 
     @Test
     void resolvesEqualCostsByChoosingTheEarliestWindow() {
-        Map<String, Records.PriceWindow> candidates = new LinkedHashMap<>();
-        candidates.put("late", window(20, "1.00"));
-        candidates.put("early", window(18, "1.00"));
+        List<Records.PriceWindow> candidates = List.of(
+                window("late", 20, "1.00"),
+                window("early", 18, "1.00")
+        );
 
         Records.PriceAnalysis result = service.analyze(candidates, new BigDecimal("2"));
 
@@ -244,21 +239,23 @@ public class PriceCalculationServiceTest {
 
     @Test
     void supportsNegativeSpotPrices() {
-        Map<String, Records.PriceWindow> candidates = new LinkedHashMap<>();
-        candidates.put("positive", window(18, "0.25"));
-        candidates.put("negative", window(19, "-0.50"));
+        List<Records.PriceWindow> candidates = List.of(
+                window("positive", 18, "0.25"),
+                window("negative", 19, "-0.50")
+        );
 
         Records.PriceAnalysis result = service.analyze(candidates, new BigDecimal("2"));
 
-        assertEquals(new BigDecimal("-1.00"), result.validCandidates().get(1).estimatedCost());
+        assertEquals(new BigDecimal("-1.00"),
+                result.validCandidates().get(1).estimatedCost());
         assertEquals("negative", result.cheapestWindow().candidateId());
     }
 
     @ParameterizedTest
     @ValueSource(strings = {"0", "-1.0"})
     void rejectsNonPositiveEstimatedConsumption(String estimatedKwh) {
-        Map<String, Records.PriceWindow> candidates =
-                Map.of("candidate-1", window(18, "1.50"));
+        List<Records.PriceWindow> candidates =
+                List.of(window(18, "1.50"));
 
         assertThrows(
                 IllegalArgumentException.class,
@@ -267,8 +264,8 @@ public class PriceCalculationServiceTest {
 
     @Test
     void rejectsNullEstimatedConsumption() {
-        Map<String, Records.PriceWindow> candidates =
-                Map.of("candidate-1", window(18, "1.50"));
+        List<Records.PriceWindow> candidates =
+                List.of(window(18, "1.50"));
 
         assertThrows(
                 IllegalArgumentException.class,
@@ -282,15 +279,23 @@ public class PriceCalculationServiceTest {
                 () -> service.analyze(null, BigDecimal.ONE));
         assertThrows(
                 IllegalArgumentException.class,
-                () -> service.analyze(Map.of(), BigDecimal.ONE));
+                () -> service.analyze(List.of(), BigDecimal.ONE));
     }
 
     private Records.PriceWindow window(int startHour, String averageSpotPrice) {
+        return window("candidate-" + startHour, startHour, averageSpotPrice);
+    }
+
+    private Records.PriceWindow window(
+            String candidateId,
+            int startHour,
+            String averageSpotPrice) {
         OffsetDateTime start = OffsetDateTime.of(
                 2026, 11, 3,
                 startHour, 0, 0, 0,
                 ZoneOffset.ofHours(1));
         return new Records.PriceWindow(
+                candidateId,
                 start,
                 start.plusHours(1),
                 new BigDecimal(averageSpotPrice));

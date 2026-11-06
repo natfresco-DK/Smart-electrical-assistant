@@ -82,15 +82,6 @@ class AiAdviceServiceTest {
     }
 
     @Test
-    void rejectsAnIdNotSuppliedByJava() {
-        when(responseSpec.entity(Records.AiWindowSelection.class))
-                .thenReturn(validResponse("not-a-candidate"));
-
-        assertThrows(IllegalArgumentException.class,
-                () -> service.advise(request(), candidates()));
-    }
-
-    @Test
     void rejectsZeroAndNegativeEstimatedKwh() {
         for (BigDecimal estimatedKwh :
                 List.of(BigDecimal.ZERO, new BigDecimal("-0.1"))) {

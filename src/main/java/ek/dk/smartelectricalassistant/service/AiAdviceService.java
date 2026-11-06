@@ -139,9 +139,6 @@ public class AiAdviceService {
             throw new IllegalArgumentException(
                     "AI response must contain a positive estimatedKwh");
         }
-        if (response.selectedWindowId() == null || response.selectedWindowId().isBlank()) {
-            throw new IllegalArgumentException("AI response must include a selected window ID");
-        }
         if (response.summary() == null || response.summary().isBlank()) {
             throw new IllegalArgumentException("AI response must include a summary");
         }

@@ -151,11 +151,6 @@ public class AiAdviceService {
         if (response.assumptions() == null || response.assumptions().isEmpty()) {
             throw new IllegalArgumentException("AI response must include assumptions");
         }
-        boolean validCandidate = candidates.stream()
-                .anyMatch(candidate -> candidate.candidateId().equals(response.selectedWindowId()));
-        if (!validCandidate) {
-            throw new IllegalArgumentException("AI response selected window ID does not match any valid candidate");
-        }
         for (String assumption : response.assumptions()) {
             if (assumption == null || assumption.isBlank()) {
                 throw new IllegalArgumentException("AI response assumptions cannot contain null or blank values");

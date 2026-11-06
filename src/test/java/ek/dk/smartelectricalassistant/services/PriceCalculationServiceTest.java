@@ -58,7 +58,7 @@ public class PriceCalculationServiceTest {
         assertEquals(expectedEndHour, actual.endTime().getHour());
         assertEquals(0, actual.averageSpotPrice().compareTo(new BigDecimal(expectedAveragePrice)));
     }
-
+    //Find valid windows tests
     @Test
     void returnEveryValidCnectutiveWindow() {
         List<Records.ElectricityPrice> prices = List.of(
@@ -192,5 +192,112 @@ public class PriceCalculationServiceTest {
                 service.findValidWindows(prices, 2, null, null);
 
         assertTrue(result.isEmpty());
+    }
+
+    //analyze tests
+    @Test
+    void calculatesCostForEveryCandidateAndPreservesCandidateIds() {
+        Records.PriceWindow firstWindow = window("candidate-1", 18, "1.50");
+        Records.PriceWindow secondWindow = window("candidate-2", 20, "0.75");
+        List<Records.PriceWindow> candidates = List.of(firstWindow, secondWindow);
+
+        Records.PriceAnalysis result = service.analyze(candidates, new BigDecimal("2.0"));
+
+        assertEquals(2, result.validCandidates().size());
+        assertEquals("candidate-1", result.validCandidates().get(0).candidateId());
+        assertSame(firstWindow, result.validCandidates().get(0).priceWindow());
+        assertEquals(new BigDecimal("3.00"), result.validCandidates().get(0).estimatedCost());
+        assertEquals("candidate-2", result.validCandidates().get(1).candidateId());
+        assertEquals(new BigDecimal("1.50"), result.validCandidates().get(1).estimatedCost());
+    }
+
+    @Test
+    void selectsCheapestWindowAndEarliestWindowAsBaseline() {
+        Records.PriceWindow lateWindow = window("late", 20, "0.50");
+        Records.PriceWindow earliestWindow = window("earliest", 18, "1.00");
+        Records.PriceWindow middleWindow = window("middle", 19, "2.00");
+        List<Records.PriceWindow> candidates =
+                List.of(lateWindow, earliestWindow, middleWindow);
+
+        Records.PriceAnalysis result = service.analyze(candidates, new BigDecimal("2"));
+
+        assertEquals("late", result.cheapestWindow().candidateId());
+        assertEquals("earliest", result.baselineWindow().candidateId());
+    }
+
+    @Test
+    void resolvesEqualCostsByChoosingTheEarliestWindow() {
+        List<Records.PriceWindow> candidates = List.of(
+                window("late", 20, "1.00"),
+                window("early", 18, "1.00")
+        );
+
+        Records.PriceAnalysis result = service.analyze(candidates, new BigDecimal("2"));
+
+        assertEquals("early", result.cheapestWindow().candidateId());
+    }
+
+    @Test
+    void supportsNegativeSpotPrices() {
+        List<Records.PriceWindow> candidates = List.of(
+                window("positive", 18, "0.25"),
+                window("negative", 19, "-0.50")
+        );
+
+        Records.PriceAnalysis result = service.analyze(candidates, new BigDecimal("2"));
+
+        assertEquals(new BigDecimal("-1.00"),
+                result.validCandidates().get(1).estimatedCost());
+        assertEquals("negative", result.cheapestWindow().candidateId());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"0", "-1.0"})
+    void rejectsNonPositiveEstimatedConsumption(String estimatedKwh) {
+        List<Records.PriceWindow> candidates =
+                List.of(window(18, "1.50"));
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> service.analyze(candidates, new BigDecimal(estimatedKwh)));
+    }
+
+    @Test
+    void rejectsNullEstimatedConsumption() {
+        List<Records.PriceWindow> candidates =
+                List.of(window(18, "1.50"));
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> service.analyze(candidates, null));
+    }
+
+    @Test
+    void rejectsNullAndEmptyCandidates() {
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> service.analyze(null, BigDecimal.ONE));
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> service.analyze(List.of(), BigDecimal.ONE));
+    }
+
+    private Records.PriceWindow window(int startHour, String averageSpotPrice) {
+        return window("candidate-" + startHour, startHour, averageSpotPrice);
+    }
+
+    private Records.PriceWindow window(
+            String candidateId,
+            int startHour,
+            String averageSpotPrice) {
+        OffsetDateTime start = OffsetDateTime.of(
+                2026, 11, 3,
+                startHour, 0, 0, 0,
+                ZoneOffset.ofHours(1));
+        return new Records.PriceWindow(
+                candidateId,
+                start,
+                start.plusHours(1),
+                new BigDecimal(averageSpotPrice));
     }
 }

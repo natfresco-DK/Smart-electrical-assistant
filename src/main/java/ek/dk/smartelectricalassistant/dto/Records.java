@@ -38,7 +38,6 @@ public class Records{
             if (question == null || question.isBlank()) {
                 throw new IllegalArgumentException("question is required");
             }
-            Objects.requireNonNull(date, "date is required");
             Objects.requireNonNull(region, "region is required");
             Objects.requireNonNull(machineType, "machineType is required");
             Objects.requireNonNull(duration, "duration is required");
@@ -66,6 +65,7 @@ public class Records{
     ){}
 
     public record PriceWindow(
+            String candidateId,
             OffsetDateTime startTime,
             OffsetDateTime endTime,
             BigDecimal averageSpotPrice
@@ -84,7 +84,8 @@ public class Records{
     ){}
 
     public record AiWindowSelection(
-            String selectedCandidateId,
+            BigDecimal estimatedKwh,
+            String selectedWindowId,
             String summary,
             List<String> reasons,
             List<String> assumptions

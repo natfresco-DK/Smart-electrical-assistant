@@ -1,6 +1,7 @@
 package ek.dk.smartelectricalassistant.controllers;
 
 import ek.dk.smartelectricalassistant.model.PriceArea;
+import ek.dk.smartelectricalassistant.service.AdviceService;
 import ek.dk.smartelectricalassistant.service.ElectricityPriceService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,13 +21,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class UserControllerTest {
 
     private ElectricityPriceService electricityPriceService;
+    private AdviceService adviceService;
     private MockMvc mockMvc;
 
     @BeforeEach
     void setUp() {
         electricityPriceService = mock(ElectricityPriceService.class);
+        adviceService = mock(AdviceService.class);
+
         mockMvc = MockMvcBuilders
-                .standaloneSetup(new UserController(electricityPriceService))
+                .standaloneSetup(new UserController(electricityPriceService, adviceService))
                 .build();
     }
 

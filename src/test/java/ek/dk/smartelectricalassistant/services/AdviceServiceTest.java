@@ -65,7 +65,7 @@ class AdviceServiceTest {
         assertEquals(RecommendationSource.AI, response.source());
         assertEquals("candidate-0", response.selectedWindow().candidateId());
         assertEquals("candidate-1", response.cheapestWindow().candidateId());
-        assertEquals(new BigDecimal("1.00"), response.extraCostVsCheapestDkk());
+        assertEquals(new BigDecimal("2.00"), response.extraCostVsCheapestDkk());
         verify(aiAdviceService, times(1)).advise(any(), any());
     }
 

@@ -85,7 +85,7 @@ public class Records{
     ){}
 
     public record AiWindowSelection(
-            BigDecimal esatimatedKwh,
+            BigDecimal estimatedKwh,
             String selectedWindowId,
             String summary,
             List<String> reasons,

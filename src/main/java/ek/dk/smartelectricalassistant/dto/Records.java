@@ -66,6 +66,7 @@ public class Records{
     ){}
 
     public record PriceWindow(
+            String candidateId,
             OffsetDateTime startTime,
             OffsetDateTime endTime,
             BigDecimal averageSpotPrice
@@ -84,7 +85,8 @@ public class Records{
     ){}
 
     public record AiWindowSelection(
-            String selectedCandidateId,
+            BigDecimal esatimatedKwh,
+            String selectedWindowId,
             String summary,
             List<String> reasons,
             List<String> assumptions

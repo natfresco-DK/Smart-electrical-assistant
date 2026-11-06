@@ -59,40 +59,58 @@ public class PriceCalculationService {
 
             BigDecimal avgPrice = totalPrice.divide(BigDecimal.valueOf(duration), 5, RoundingMode.HALF_UP);
 
-            validWindows.add(new Records.PriceWindow(windowStart, windowEnd, avgPrice));
+            String candidateId = "candidate-" + validWindows.size(); // Generate a unique candidate ID for each valid window
+
+            validWindows.add(new Records.PriceWindow(candidateId, windowStart, windowEnd, avgPrice));
         }
 
         return validWindows;
     }
 
-    public Records.PriceAnalysis analyze(Map<String, Records.PriceWindow> candidates, BigDecimal estimatedKwh) {
-        if (estimatedKwh == null || estimatedKwh.compareTo(BigDecimal.ZERO) <= 0) {
+    public Records.PriceAnalysis analyze(List<Records.PriceWindow> candidates, BigDecimal estimatedKwh) {
+        if (candidates == null || candidates.isEmpty()) {
+            throw new IllegalArgumentException("Candidates cannot be null or empty");
+        }
+        if (estimatedKwh == null
+                || estimatedKwh.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Estimated kWh must be greater than zero");
         }
-        if (candidates == null) {
-            throw new IllegalArgumentException("Candidates cannot be null");
-        }
-        if (candidates.isEmpty()) {
-            throw new IllegalArgumentException("Candidates cannot be empty");
-        }
-        List<Records.PricedWindow> validCandidates = new ArrayList<>();
-        candidates.forEach((key, value) -> {
-            BigDecimal estimatedCost = value.averageSpotPrice().multiply(estimatedKwh)
-                    .setScale(2, RoundingMode.HALF_UP);
-            validCandidates.add(new Records.PricedWindow(key, value, estimatedCost));
-        });
-       Records.PricedWindow cheapestWindow = validCandidates.stream()
-        .min(
-                Comparator.comparing(Records.PricedWindow::estimatedCost)
-                .thenComparing(candidate ->
-                        candidate.priceWindow().startTime()))
-        .orElse(null);
-        Records.PricedWindow baselineWindow = validCandidates.getFirst();
-        for (Records.PricedWindow candidate : validCandidates) {
-            if(candidate.priceWindow().startTime().isBefore(baselineWindow.priceWindow().startTime())) {
-                baselineWindow = candidate;
+        Set<String> candidateIds = new HashSet<>();
+        List<Records.PricedWindow> pricedCandidates = new ArrayList<>();
+        for (Records.PriceWindow candidate : candidates) {
+            if (candidate == null) {
+                throw new IllegalArgumentException("Candidates cannot contain null values");
             }
+            if (candidate.candidateId() == null
+                    || candidate.candidateId().isBlank()) {
+                throw new IllegalArgumentException("Every candidate must have an ID");
+            }
+            if (!candidateIds.add(candidate.candidateId())) {
+                throw new IllegalArgumentException("Candidate IDs must be unique");
+            }
+            if (candidate.startTime() == null || candidate.endTime() == null || candidate.averageSpotPrice() == null) {
+                throw new IllegalArgumentException("Candidate fields cannot be null");
+            }
+            BigDecimal estimatedCost = candidate.averageSpotPrice()
+                    .multiply(estimatedKwh)
+                    .setScale(2, RoundingMode.HALF_UP);
+            pricedCandidates.add(new Records.PricedWindow(
+                    candidate.candidateId(),
+                    candidate,
+                    estimatedCost
+            ));
         }
-        return new Records.PriceAnalysis(validCandidates, cheapestWindow, baselineWindow);
-}
+        Records.PricedWindow cheapestWindow = pricedCandidates.stream()
+                .min(Comparator
+                        .comparing(Records.PricedWindow::estimatedCost)
+                        .thenComparing(window ->
+                                window.priceWindow().startTime()))
+                .orElseThrow();
+        Records.PricedWindow baselineWindow = pricedCandidates.stream()
+                .min(Comparator.comparing(window ->
+                        window.priceWindow().startTime()))
+                .orElseThrow();
+        return new Records.PriceAnalysis(pricedCandidates, cheapestWindow, baselineWindow
+        );
+    }
 }

@@ -38,7 +38,6 @@ public class Records{
             if (question == null || question.isBlank()) {
                 throw new IllegalArgumentException("question is required");
             }
-            Objects.requireNonNull(date, "date is required");
             Objects.requireNonNull(region, "region is required");
             Objects.requireNonNull(machineType, "machineType is required");
             Objects.requireNonNull(duration, "duration is required");

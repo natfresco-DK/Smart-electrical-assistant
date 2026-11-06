@@ -8,9 +8,7 @@ import java.math.RoundingMode;
 import java.time.Clock;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class PriceCalculationService {
@@ -67,7 +65,34 @@ public class PriceCalculationService {
         return validWindows;
     }
 
-    public Records.PriceAnalysis analyse(Map<String, Records.PriceWindow> candidates,, BigDecimal estimatedKwh) {
-        return null;
-    }
+    public Records.PriceAnalysis analyze(Map<String, Records.PriceWindow> candidates, BigDecimal estimatedKwh) {
+        if (estimatedKwh == null || estimatedKwh.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Estimated kWh must be greater than zero");
+        }
+        if (candidates == null) {
+            throw new IllegalArgumentException("Candidates cannot be null");
+        }
+        if (candidates.isEmpty()) {
+            throw new IllegalArgumentException("Candidates cannot be empty");
+        }
+        List<Records.PricedWindow> validCandidates = new ArrayList<>();
+        candidates.forEach((key, value) -> {
+            BigDecimal estimatedCost = value.averageSpotPrice().multiply(estimatedKwh)
+                    .setScale(2, RoundingMode.HALF_UP);
+            validCandidates.add(new Records.PricedWindow(key, value, estimatedCost));
+        });
+       Records.PricedWindow cheapestWindow = validCandidates.stream()
+        .min(
+                Comparator.comparing(Records.PricedWindow::estimatedCost)
+                .thenComparing(candidate ->
+                        candidate.priceWindow().startTime()))
+        .orElse(null);
+        Records.PricedWindow baselineWindow = validCandidates.getFirst();
+        for (Records.PricedWindow candidate : validCandidates) {
+            if(candidate.priceWindow().startTime().isBefore(baselineWindow.priceWindow().startTime())) {
+                baselineWindow = candidate;
+            }
+        }
+        return new Records.PriceAnalysis(validCandidates, cheapestWindow, baselineWindow);
+}
 }

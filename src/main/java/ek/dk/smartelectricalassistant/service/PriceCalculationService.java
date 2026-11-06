@@ -33,6 +33,9 @@ public class PriceCalculationService {
                     .filter(timeStart -> !timeStart.isBefore(now))
                     .findFirst().orElse(null);
         }
+        if(earliestStartTime == null){
+            return List.of();
+        }
         if (latestEndTime == null) {
             latestEndTime = now.with(LocalTime.MAX);
         }

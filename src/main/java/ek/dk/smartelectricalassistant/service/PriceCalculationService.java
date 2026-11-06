@@ -8,8 +8,7 @@ import java.math.RoundingMode;
 import java.time.Clock;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class PriceCalculationService {
@@ -60,9 +59,58 @@ public class PriceCalculationService {
 
             BigDecimal avgPrice = totalPrice.divide(BigDecimal.valueOf(duration), 5, RoundingMode.HALF_UP);
 
-            validWindows.add(new Records.PriceWindow(windowStart, windowEnd, avgPrice));
+            String candidateId = "candidate-" + validWindows.size(); // Generate a unique candidate ID for each valid window
+
+            validWindows.add(new Records.PriceWindow(candidateId, windowStart, windowEnd, avgPrice));
         }
 
         return validWindows;
+    }
+
+    public Records.PriceAnalysis analyze(List<Records.PriceWindow> candidates, BigDecimal estimatedKwh) {
+        if (candidates == null || candidates.isEmpty()) {
+            throw new IllegalArgumentException("Candidates cannot be null or empty");
+        }
+        if (estimatedKwh == null
+                || estimatedKwh.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Estimated kWh must be greater than zero");
+        }
+        Set<String> candidateIds = new HashSet<>();
+        List<Records.PricedWindow> pricedCandidates = new ArrayList<>();
+        for (Records.PriceWindow candidate : candidates) {
+            if (candidate == null) {
+                throw new IllegalArgumentException("Candidates cannot contain null values");
+            }
+            if (candidate.candidateId() == null
+                    || candidate.candidateId().isBlank()) {
+                throw new IllegalArgumentException("Every candidate must have an ID");
+            }
+            if (!candidateIds.add(candidate.candidateId())) {
+                throw new IllegalArgumentException("Candidate IDs must be unique");
+            }
+            if (candidate.startTime() == null || candidate.endTime() == null || candidate.averageSpotPrice() == null) {
+                throw new IllegalArgumentException("Candidate fields cannot be null");
+            }
+            BigDecimal estimatedCost = candidate.averageSpotPrice()
+                    .multiply(estimatedKwh)
+                    .setScale(2, RoundingMode.HALF_UP);
+            pricedCandidates.add(new Records.PricedWindow(
+                    candidate.candidateId(),
+                    candidate,
+                    estimatedCost
+            ));
+        }
+        Records.PricedWindow cheapestWindow = pricedCandidates.stream()
+                .min(Comparator
+                        .comparing(Records.PricedWindow::estimatedCost)
+                        .thenComparing(window ->
+                                window.priceWindow().startTime()))
+                .orElseThrow();
+        Records.PricedWindow baselineWindow = pricedCandidates.stream()
+                .min(Comparator.comparing(window ->
+                        window.priceWindow().startTime()))
+                .orElseThrow();
+        return new Records.PriceAnalysis(pricedCandidates, cheapestWindow, baselineWindow
+        );
     }
 }

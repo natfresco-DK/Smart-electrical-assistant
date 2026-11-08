@@ -11,7 +11,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/electricity-prices")
+@RequestMapping("/api")
 public class UserController {
 
     private final ElectricityPriceService electricityPriceService;
@@ -22,7 +22,7 @@ public class UserController {
         this.adviceService = adviceService;
     }
 
-    @GetMapping
+    @GetMapping("/electricity-prices")
     public List<Records.ElectricityPrice> getPrices(
             @RequestParam
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
@@ -30,7 +30,7 @@ public class UserController {
         return electricityPriceService.getPrices(date, priceArea);
     }
 
-    @PostMapping
+    @PostMapping("/advice")
     public Records.AdviceResponse getAdvice(@RequestBody Records.AdviceRequest request) {
         return adviceService.getAdvice(request);
     }

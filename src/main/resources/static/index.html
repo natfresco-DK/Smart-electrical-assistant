@@ -2,9 +2,91 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Smart electricity assistant</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<main class="app-shell">
+    <header class="page-header">
+        <p class="eyebrow">Smart electricity assistant</p>
+        <h1>Plan your appliance use</h1>
+        <p>Ask a question and get a personalised time window based on Danish spot prices.</p>
+    </header>
 
+    <section class="chat-panel" aria-labelledby="conversation-title">
+        <div class="section-heading">
+            <h2 id="conversation-title">Conversation</h2>
+            <button id="clear-conversation" class="button button-secondary" type="button">Clear</button>
+        </div>
+        <div id="messages" class="messages" aria-live="polite">
+            <p id="empty-state" class="empty-state">Your recommendations will appear here.</p>
+        </div>
+    </section>
+
+    <section class="request-panel" aria-labelledby="request-title">
+        <h2 id="request-title">What should we plan?</h2>
+        <form id="advice-form" novalidate>
+            <div class="field field-wide">
+                <label for="question">Your preferences</label>
+                <textarea id="question" name="question" rows="3"
+                          placeholder="For example: Run it when electricity is cheap, but not during the evening peak."
+                          required></textarea>
+            </div>
+            <div class="form-grid">
+                <div class="field">
+                    <label for="machine-type">Appliance</label>
+                    <select id="machine-type" name="machineType" required>
+                        <option value="DISHWASHER">Dishwasher</option>
+                        <option value="WASHING_MACHINE">Washing machine</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="price-area">Price area</label>
+                    <select id="price-area" name="region" required>
+                        <option value="DK2">DK2 (Zealand)</option>
+                        <option value="DK1">DK1 (Jutland/Funen)</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="date">Date</label>
+                    <input id="date" name="date" type="date" required>
+                </div>
+                <div class="field">
+                    <label for="duration">Duration</label>
+                    <select id="duration" name="duration" required>
+                        <option value="1">1 hour</option>
+                        <option value="2">2 hours</option>
+                        <option value="3">3 hours</option>
+                        <option value="4">4 hours</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="estimated-kwh">Estimated consumption <span>(optional)</span></label>
+                    <div class="input-with-unit">
+                        <input id="estimated-kwh" name="estimatedKwh" type="number" min="0.01" step="0.01"
+                               placeholder="Let AI estimate">
+                        <span>kWh</span>
+                    </div>
+                </div>
+                <div class="field field-inline">
+                    <label for="earliest-start">Earliest start <span>(optional)</span></label>
+                    <input id="earliest-start" name="earliestStart" type="time">
+                </div>
+                <div class="field field-inline">
+                    <label for="latest-end">Latest finish <span>(optional)</span></label>
+                    <input id="latest-end" name="latestEnd" type="time">
+                </div>
+            </div>
+            <p class="form-help">Costs are spot-price estimates only; household charges and grid fees may not be included.</p>
+            <div id="form-error" class="form-error" role="alert" hidden></div>
+            <button id="submit-button" class="button button-primary" type="submit">
+                <span id="submit-label">Get recommendation</span>
+                <span id="loading-label" hidden>Calculating...</span>
+            </button>
+        </form>
+    </section>
+</main>
+<script src="app.js"></script>
 </body>
 </html>
